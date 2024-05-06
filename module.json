@@ -1,0 +1,18 @@
+{
+    "name": "Discord Notifications",
+    "alias": "discord",
+    "description": "Module that sends conversation notifications to a Discord channel",
+    "version": "1.0.0",
+    "keywords": [],
+    "img": "/modules/discord/img/discord-module-256x256.jpg",
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Discord\\Providers\\DiscordModuleServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}

@@ -1,0 +1,34 @@
+{
+    "name": "freescout-helpdesk/discord",
+    "description": "",
+    "authors": [
+        {
+            "name": "Derzsi Daniel",
+            "email": "daniel@tohka.us"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Discord\\Providers\\DiscordModuleServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "require": {
+        "nwidart/laravel-modules": "^11.0"
+    },
+    "replace": {
+        "laravel/framework": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Discord\\": ""
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "wikimedia/composer-merge-plugin": true
+        }
+    }
+}
