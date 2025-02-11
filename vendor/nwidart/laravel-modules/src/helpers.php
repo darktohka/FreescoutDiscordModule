@@ -8,7 +8,7 @@ if (! function_exists('module_path')) {
     {
         $module = app('modules')->find($name);
 
-        return $module->getPath() . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $module->getPath().($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 }
 
@@ -16,12 +16,12 @@ if (! function_exists('config_path')) {
     /**
      * Get the configuration path.
      *
-     * @param  string $path
+     * @param  string  $path
      * @return string
      */
     function config_path($path = '')
     {
-        return app()->basePath() . '/config' . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return app()->basePath().'/config'.($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 }
 
@@ -34,7 +34,7 @@ if (! function_exists('public_path')) {
      */
     function public_path($path = '')
     {
-        return app()->make('path.public') . ($path ? DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR) : $path);
+        return app()->make('path.public').($path ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : $path);
     }
 }
 
@@ -42,8 +42,8 @@ if (! function_exists('module_vite')) {
     /**
      * support for vite
      */
-    function module_vite($module, $asset): Vite
+    function module_vite($module, $asset, $hotFilePath = null): Vite
     {
-        return ViteFacade::useHotFile(storage_path('vite.hot'))->useBuildDirectory($module)->withEntryPoints([$asset]);
+        return ViteFacade::useHotFile($hotFilePath ?: storage_path('vite.hot'))->useBuildDirectory($module)->withEntryPoints([$asset]);
     }
 }

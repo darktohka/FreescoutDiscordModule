@@ -2,8 +2,10 @@
 
 namespace Nwidart\Modules;
 
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\ProviderRepository;
 use Illuminate\Support\ServiceProvider;
-use Nwidart\Modules\Providers\BootstrapServiceProvider;
+use Illuminate\Support\Str;
 use Nwidart\Modules\Providers\ConsoleServiceProvider;
 use Nwidart\Modules\Providers\ContractsServiceProvider;
 
@@ -12,23 +14,27 @@ abstract class ModulesServiceProvider extends ServiceProvider
     /**
      * Booting the package.
      */
-    public function boot()
-    {
-    }
+    public function boot() {}
 
     /**
      * Register all modules.
      */
-    public function register()
-    {
-    }
+    public function register() {}
 
     /**
      * Register all modules.
      */
     protected function registerModules()
     {
-        $this->app->register(BootstrapServiceProvider::class);
+        // $this->app->register(\Nwidart\Modules\Providers\BootstrapServiceProvider::class);
+
+        $manifest = app()->make(ModuleManifest::class);
+
+        (new ProviderRepository($this->app, new Filesystem, $this->getCachedModulePath()))
+            ->load($manifest->providersArray());
+
+        $manifest->registerFiles();
+
     }
 
     /**
@@ -36,8 +42,8 @@ abstract class ModulesServiceProvider extends ServiceProvider
      */
     protected function registerNamespaces()
     {
-        $configPath = __DIR__ . '/../config/config.php';
-        $stubsPath = dirname(__DIR__) . '/src/Commands/stubs';
+        $configPath = __DIR__.'/../config/config.php';
+        $stubsPath = dirname(__DIR__).'/src/Commands/stubs';
 
         $this->publishes([
             $configPath => config_path('modules.php'),
@@ -48,7 +54,7 @@ abstract class ModulesServiceProvider extends ServiceProvider
         ], 'stubs');
 
         $this->publishes([
-            __DIR__ . '/../scripts/vite-module-loader.js' => base_path('vite-module-loader.js'),
+            __DIR__.'/../scripts/vite-module-loader.js' => base_path('vite-module-loader.js'),
         ], 'vite');
     }
 
@@ -74,5 +80,10 @@ abstract class ModulesServiceProvider extends ServiceProvider
     {
         $this->app->register(ConsoleServiceProvider::class);
         $this->app->register(ContractsServiceProvider::class);
+    }
+
+    protected function getCachedModulePath()
+    {
+        return Str::replaceLast('services.php', 'modules.php', $this->app->getCachedServicesPath());
     }
 }

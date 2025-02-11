@@ -20,8 +20,6 @@ class ConsoleServiceProvider extends ServiceProvider
 
     /**
      * Get the package default commands.
-     *
-     * @return Collection
      */
     public static function defaultCommands(): Collection
     {
@@ -52,6 +50,7 @@ class ConsoleServiceProvider extends ServiceProvider
             Commands\Make\ActionMakeCommand::class,
             Commands\Make\CastMakeCommand::class,
             Commands\Make\ChannelMakeCommand::class,
+            Commands\Make\ClassMakeCommand::class,
             Commands\Make\CommandMakeCommand::class,
             Commands\Make\ComponentClassMakeCommand::class,
             Commands\Make\ComponentViewMakeCommand::class,
@@ -74,6 +73,7 @@ class ConsoleServiceProvider extends ServiceProvider
             Commands\Make\ObserverMakeCommand::class,
             Commands\Make\PolicyMakeCommand::class,
             Commands\Make\ProviderMakeCommand::class,
+            Commands\Make\RepositoryMakeCommand::class,
             Commands\Make\RequestMakeCommand::class,
             Commands\Make\ResourceMakeCommand::class,
             Commands\Make\RouteProviderMakeCommand::class,
@@ -94,7 +94,10 @@ class ConsoleServiceProvider extends ServiceProvider
             // Other Commands
             Commands\ComposerUpdateCommand::class,
             Commands\LaravelModulesV6Migrator::class,
+            Commands\ModuleDiscoverCommand::class,
+            Commands\ModuleClearCompiledCommand::class,
             Commands\SetupCommand::class,
+            Commands\UpdatePhpunitCoverage::class,
 
             Commands\Database\MigrateFreshCommand::class,
         ]);

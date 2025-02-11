@@ -3,10 +3,19 @@
 namespace Nwidart\Modules;
 
 use Composer\InstalledVersions;
+use Illuminate\Contracts\Translation\Translator as TranslatorContract;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Translation\Translator;
+use Nwidart\Modules\Constants\ModuleEvent;
+use Nwidart\Modules\Contracts\ActivatorInterface;
 use Nwidart\Modules\Contracts\RepositoryInterface;
 use Nwidart\Modules\Exceptions\InvalidActivatorClass;
 use Nwidart\Modules\Support\Stub;
+use Symfony\Component\Console\Output\NullOutput;
 
 class LaravelModulesServiceProvider extends ModulesServiceProvider
 {
@@ -16,7 +25,20 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
     public function boot()
     {
         $this->registerNamespaces();
+
+        $this->app->singleton(
+            ModuleManifest::class,
+            fn () => new ModuleManifest(
+                new Filesystem(),
+                app(Contracts\RepositoryInterface::class)->getScanPaths(),
+                $this->getCachedModulePath(),
+                app(ActivatorInterface::class)
+            )
+        );
+
         $this->registerModules();
+
+        $this->registerEvents();
 
         AboutCommand::add('Laravel-Modules', [
             'Version' => fn () => InstalledVersions::getPrettyVersion('nwidart/laravel-modules'),
@@ -32,7 +54,10 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
         $this->setupStubPath();
         $this->registerProviders();
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'modules');
+        $this->registerMigrations();
+        $this->registerTranslations();
+
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'modules');
     }
 
     /**
@@ -40,7 +65,7 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
      */
     public function setupStubPath()
     {
-        $path = $this->app['config']->get('modules.stubs.path') ?? __DIR__ . '/Commands/stubs';
+        $path = $this->app['config']->get('modules.stubs.path') ?? __DIR__.'/Commands/stubs';
         Stub::setBasePath($path);
 
         $this->app->booted(function ($app) {
@@ -64,7 +89,7 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
         });
         $this->app->singleton(Contracts\ActivatorInterface::class, function ($app) {
             $activator = $app['config']->get('modules.activator');
-            $class = $app['config']->get('modules.activators.' . $activator)['class'];
+            $class = $app['config']->get('modules.activators.'.$activator)['class'];
 
             if ($class === null) {
                 throw InvalidActivatorClass::missingConfig();
@@ -73,5 +98,53 @@ class LaravelModulesServiceProvider extends ModulesServiceProvider
             return new $class($app);
         });
         $this->app->alias(Contracts\RepositoryInterface::class, 'modules');
+    }
+
+    protected function registerMigrations(): void
+    {
+        if (! $this->app['config']->get('modules.auto-discover.migrations', true)) {
+            return;
+        }
+
+        $this->app->resolving(Migrator::class, function (Migrator $migrator) {
+            $migration_path = $this->app['config']->get('modules.paths.generator.migration.path');
+            collect(\Nwidart\Modules\Facades\Module::allEnabled())
+                ->each(function (\Nwidart\Modules\Laravel\Module $module) use ($migration_path, $migrator) {
+                    $migrator->path($module->getExtraPath($migration_path));
+                });
+        });
+    }
+
+    protected function registerTranslations(): void
+    {
+        if (! $this->app['config']->get('modules.auto-discover.translations', true)) {
+            return;
+        }
+        $this->callAfterResolving('translator', function (TranslatorContract $translator) {
+            if (! $translator instanceof Translator) {
+                return;
+            }
+
+            collect(\Nwidart\Modules\Facades\Module::allEnabled())
+                ->each(function (\Nwidart\Modules\Laravel\Module $module) use ($translator) {
+                    $path = $module->getExtraPath($this->app['config']->get('modules.paths.generator.lang.path'));
+                    $translator->addNamespace($module->getLowerName(), $path);
+                    $translator->addJsonPath($path);
+                });
+        });
+    }
+
+
+    private function registerEvents(): void
+    {
+        Event::listen(
+            [
+                'modules.*.'.ModuleEvent::DELETED,
+                'modules.*.'.ModuleEvent::CREATED,
+                'modules.*.'.ModuleEvent::DISABLED,
+                'modules.*.'.ModuleEvent::ENABLED,
+            ],
+            fn () => Artisan::call('module:clear-compiled', outputBuffer: new NullOutput)
+        );
     }
 }

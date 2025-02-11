@@ -3,11 +3,12 @@
 namespace Nwidart\Modules\Commands\Database;
 
 use Nwidart\Modules\Commands\BaseCommand;
+use Nwidart\Modules\Contracts\ConfirmableCommand;
 use Nwidart\Modules\Migrations\Migrator;
 use Nwidart\Modules\Traits\MigrationLoaderTrait;
 use Symfony\Component\Console\Input\InputOption;
 
-class MigrateResetCommand extends BaseCommand
+class MigrateResetCommand extends BaseCommand implements ConfirmableCommand
 {
     use MigrationLoaderTrait;
 
@@ -50,7 +51,7 @@ class MigrateResetCommand extends BaseCommand
         $this->components->warn("Nothing to rollback on module <fg=cyan;options=bold>{$module->getName()}</>");
     }
 
-    public function getInfo(): string|null
+    public function getInfo(): ?string
     {
         return null;
     }

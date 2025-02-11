@@ -19,7 +19,9 @@
   ],
   "require": {
     "php": ">=8.2",
+    "ext-dom": "*",
     "ext-json": "*",
+    "ext-simplexml": "*",
     "wikimedia/composer-merge-plugin": "^2.1"
   },
   "require-dev": {
@@ -27,7 +29,8 @@
     "mockery/mockery": "^1.6",
     "orchestra/testbench": "^v9.0",
     "friendsofphp/php-cs-fixer": "^v3.52",
-    "laravel/framework": "^v11.0",
+    "laravel/framework": "^v11.33",
+    "laravel/pint": "^1.16",
     "spatie/phpunit-snapshot-assertions": "^5.0",
     "phpstan/phpstan": "^1.4"
   },
@@ -64,9 +67,10 @@
     }
   },
   "scripts": {
-    "update-snapshots": "./vendor/bin/phpunit --no-coverage -d --update-snapshots",
-    "test": "vendor/bin/phpunit",
-    "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+    "update-snapshots": "./phpunit --no-coverage -d --update-snapshots",
+    "lint": "pint",
+    "test": "phpunit",
+    "test-coverage": "phpunit --coverage-html coverage",
     "pcf": "vendor/bin/php-cs-fixer fix --verbose"
   },
   "minimum-stability": "dev",

@@ -3,9 +3,10 @@
 namespace Nwidart\Modules\Commands\Database;
 
 use Nwidart\Modules\Commands\BaseCommand;
+use Nwidart\Modules\Contracts\ConfirmableCommand;
 use Symfony\Component\Console\Input\InputOption;
 
-class MigrateRefreshCommand extends BaseCommand
+class MigrateRefreshCommand extends BaseCommand implements ConfirmableCommand
 {
     /**
      * The console command name.
@@ -27,15 +28,15 @@ class MigrateRefreshCommand extends BaseCommand
 
         $this->components->task("Refreshing Migration {$module->getName()} module", function () use ($module) {
             $this->call('module:migrate-reset', [
-                'module'     => $module->getStudlyName(),
+                'module' => $module->getStudlyName(),
                 '--database' => $this->option('database'),
-                '--force'    => $this->option('force'),
+                '--force' => $this->option('force'),
             ]);
 
             $this->call('module:migrate', [
-                'module'     => $module->getStudlyName(),
+                'module' => $module->getStudlyName(),
                 '--database' => $this->option('database'),
-                '--force'    => $this->option('force'),
+                '--force' => $this->option('force'),
             ]);
 
             if ($this->option('seed')) {
@@ -49,8 +50,6 @@ class MigrateRefreshCommand extends BaseCommand
 
     /**
      * Get the console command options.
-     *
-     * @return array
      */
     protected function getOptions(): array
     {
